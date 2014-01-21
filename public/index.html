@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Chloe</title>
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<style type="text/css" media="screen">
+    body { margin: 0; padding: 0; }
+    div.div1{ background: #999; }
+    div.div2{
+        font-family: verdana; font-size: 16px;
+        background-color: #002B36;
+        color: #93A1A1
+    }
+</style>
+</head>
+<body>
+
+<div class="div1"><div id="editor">(reduce + [1 2 3 4 5 6])</div></div>
+<div class="div2"></div>
+
+
+<script src="/ace-builds/src/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/ace-builds/src/ext-language_tools.js"></script>
+<script>
+    var counter = 0;
+
+    var langTools = ace.require("ace/ext/language_tools");
+    var editor = ace.edit("editor");
+
+    editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true
+    });
+
+    //var langTools = ace.require("ace/ext/language_tools");
+    //var editor = ace.edit("editor");
+    //editor.setOptions({enableBasicAutocompletion: true});
+    // uses http://rhymebrain.com/api.html
+    var rhymeCompleter = {
+        getCompletions: function(editor, session, pos, prefix, callback) {
+
+            callback(null, ["johan", "nisse", "kalle"]);
+
+            //if (prefix.length === 0) { callback(null, []); return }
+            //callback(null, wordList.map(function(ea) {
+            //    return {name: ea.word, value: ea.word, score: ea.score, meta: "rhyme"}
+            //}));
+                        /*
+            $.getJSON(
+                "http://rhymebrain.com/talk?function=getRhymes&word=" + prefix,
+                function(wordList) {
+                    // wordList like [{"word":"flow","freq":24,"score":300,"flags":"bc","syllables":"1"}]
+
+                })*/
+        }
+    }
+    editor.setTheme("ace/theme/solarized_dark");
+    editor.getSession().setMode("ace/mode/clojure");
+    langTools.addCompleter(rhymeCompleter);
+
+    // Font size
+    document.getElementById('editor').style.fontSize='16px';
+
+    // Tab size
+    editor.getSession().setTabSize(4);
+    /*
+    // Execute in REP
+    editor.commands.addCommand({
+        name: 'myCommand',
+        bindKey: {win: 'Ctrl-Enter',  mac: 'Command-Enter'},
+        exec: function(editor) {
+            alert('apan');
+        },
+        readOnly: true // false if this command should not apply in readOnly mode
+    );*/
+
+    editor.commands.addCommand({
+        name: 'myCommand',
+        bindKey: {win: 'Ctrl-Enter',  mac: 'Command-M'},
+        exec: function(editor) {
+            expr = editor.session.getTextRange(editor.getSelectionRange());
+            $.post( "/eval", {body: expr}, function( data ) {
+//              alert(data);
+                //$('.div2').append((++counter) + ". " + expr + " ;=> " + data + "<br>");
+                $('.div2').html(data);
+            });
+        },
+        readOnly: true // false if this command should not apply in readOnly mode
+    });
+
+</script>
+
+<script>
+$(document).ready(function() {
+    var docHeight = $(document).height();
+    var div1Height = docHeight - 50;
+    var div2Height = 50;
+    $('#editor').css('height', div1Height);
+    $('.div2').css('height', div2Height);
+    $('.div2').css('font-family', $('#editor').css('font-family'));
+});
+</script>
+
+
+</body>
+</html>
